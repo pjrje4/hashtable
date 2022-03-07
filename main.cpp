@@ -47,17 +47,20 @@ int main() {
 			cout << "Can't find fnames.txt." << endl;
 		}
 		else {
-			//char temp[20];
-			//char tempC;
+			char temp[20];
 			char ch;
-			while (true) {
-				//tempC = 
-				//while 
-				firstfile >> ch;
-				if (firstfile.eof()) {
-					break;
+			int reading = 0;
+			while (reading <= gen) {
+				while (true) { 
+					firstfile >> ch;
+					if (firstfile.eof()) {
+						break;
+					}
+					cout << ch;
+					if (firstfile.peek() == '\n') {
+						break;
+					}
 				}
-				cout << ch;
 			}
 
 		}
