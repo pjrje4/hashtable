@@ -10,9 +10,11 @@ struct student {
 	char* last;
 	int id;
 	float gpa;
-	student(char* firstIn, char* lastIn) {
+	student(char* firstIn, char* lastIn, int idIn, float gpaIn) {
 		first = firstIn;
 		last = lastIn;
+		id = idIn;
+		gpaIn;
 	}
 };
 struct item {
@@ -40,81 +42,116 @@ char* randomName(char names[][20], int length) {
 	return names[randN];
 }
 
+bool addStudent(hashT &hash, student* sIn) {
+	bool collide = false;
+	int slot = hashify(sIn, hash);
+	int col = 0;
+	item* insertn = hast->items[slot]
+	item* insert = hash->items[slot];
+	while (insertn != NULL) {
+		insert = insertn;
+		col++;
+		insertn = insert->next;
+		if (col > 3) {
+			collide = true;
+		}
+	}
+	insert->next = new item(sIn);
+	return collide;
+}
 int main() {
+	hashT studentHash = new hashT(100);
+	char firstNames [1000] [20];
+	char lastNames [1000] [20];
+
+	//firstnames
+	fstream firstfile;
+	firstfile.open("fnames.txt", ios::in);
+	if (!firstfile) {
+		cout << "Can't find fnames.txt." << endl;
+	}
+	else {
+		char ch;
+		int reading = 0;
+		int firstIndex = 0;
+		while (reading <= 1000) {
+			char temp[20] = {'\0'};
+			firstIndex = 0;
+			while (true) { 
+				firstfile >> ch;
+				temp[firstIndex] = ch;
+				firstIndex++;
+				if (firstfile.eof()) { // end break
+					break;
+				}
+				if (firstfile.peek() == '\n') {
+					break;
+				}
+			}
+			for (int i=0;i<=20;i++) {
+				firstNames[reading][i] = temp[i];
+			}
+			reading++;
+		}
+	}
+	//lastnames
+	fstream lastfile;
+	lastfile.open("lnames.txt", ios::in);
+	if (!lastfile) {
+		cout << "Can't find lnames.txt." << endl;
+	}
+	else {
+		char ch;
+		int reading = 0;
+		int lastIndex = 0;
+		while (reading <= 1000) {
+			char temp[20] = {'\0'};
+			lastIndex = 0;
+			while (true) {
+				lastfile >> ch;
+				temp[lastIndex] = ch;
+				lastIndex++;
+				if (lastfile.eof()) { // end break
+					break;
+				}
+				if (lastfile.peek() == '\n') {
+					break;
+					cout << temp << endl;
+				}
+			}
+			for (int i=0;i<=20;i++) {
+				lastNames[reading][i] = temp[i];
+			}
+			reading++;
+		}
+        }
 	while (true) { //loop
 		char input[20];
-		int gen;
-		cout << "How many students to generate (1-1000): ";
-		cin >> gen;
-
-		char firstNames [gen] [20];
-		char lastNames [gen] [20];
-
-		//firstnames
-		fstream firstfile;
-		firstfile.open("fnames.txt", ios::in);
-		if (!firstfile) {
-			cout << "Can't find fnames.txt." << endl;
-		}
-		else {
-			char ch;
-			int reading = 0;
-			int firstIndex = 0;
-			while (reading <= gen) {
-				char temp[20] = {'\0'};
-				firstIndex = 0;
-				while (true) { 
-					firstfile >> ch;
-					temp[firstIndex] = ch;
-					firstIndex++;
-					if (firstfile.eof()) { // end break
-						break;
-					}
-					if (firstfile.peek() == '\n') {
-						break;
-					}
-				}
-				for (int i=0;i<=20;i++) {
-					firstNames[reading][i] = temp[i];
-				}
-				reading++;
-			}
-		}
-		//lastnames
-                fstream lastfile;
-                lastfile.open("lnames.txt", ios::in);
-                if (!lastfile) {
-                        cout << "Can't find lnames.txt." << endl;
-                }
-                else {
-                        char ch;
-                        int reading = 0;
-                        int lastIndex = 0;
-                        while (reading <= gen) {
-                                char temp[20] = {'\0'};
-                                lastIndex = 0;
-                                while (true) {
-                                        lastfile >> ch;
-                                        temp[lastIndex] = ch;
-                                        lastIndex++;
-                                        if (lastfile.eof()) { // end break
-                                                break;
-                                        }
-                                        if (lastfile.peek() == '\n') {
-                                                break;
-                                        }
-                                }
-                                for (int i=0;i<=20;i++) {
-                                        lastNames[reading][i] = temp[i];
-                                }
-                                reading++;
-                        }
-                }
-
+		bool rehash = false;
 		cout << "Enter a command (ADD, PRINT, DELETE, QUIT): ";
 		cin >> input;
 		if (strcmp(input, "ADD") == 0) { //add students
-			//addStudent(students);
+			char sfname[20];
+			char slname[20];
+			int sid;
+			float sgpa;
+
+			cout << "What is the students first name? ";
+			cin >> sfname;
+
+			cout << "What is the students last name? ";
+			cin >> slname;
+
+			cout << "What is the students id? ";
+			cin >> sid;
+			
+			cout << "What is the students gpa? ";
+			cin >> sgpa;
+
+			student* student = new student(sfname, slname, sid, sgpa);
+
+			rehash = addStudent(studentHash, student);
+
 		}
 		else if (strcmp(input, "PRINT") == 0) { //print students
 			//printStudent(students);
@@ -126,6 +163,9 @@ int main() {
 		else if (strcmp(input, "QUIT") == 0) { //quit program
 			return 0;
         	}
+		while (rehash) {
+			rehash(studentHash, rehash);
+		}
 	}
 	return 0;
 }
