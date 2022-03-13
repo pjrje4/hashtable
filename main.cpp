@@ -42,11 +42,11 @@ char* randomName(char names[][20], int length) {
 	return names[randN];
 }
 
-bool addStudent(hashT &hash, student* sIn) {
+bool addStudent(hashT* &hash, student* sIn) {
 	bool collide = false;
 	int slot = hashify(sIn, hash);
 	int col = 0;
-	item* insertn = hast->items[slot]
+	item* insertn = hash->items[slot]
 	item* insert = hash->items[slot];
 	while (insertn != NULL) {
 		insert = insertn;
@@ -59,8 +59,27 @@ bool addStudent(hashT &hash, student* sIn) {
 	insert->next = new item(sIn);
 	return collide;
 }
+void rehash(hashT* &hashIn, bool &re) {
+	re = false;
+	hashT newHash = new hashT(hashIn->tableLength);
+	for (int i = 0; i >= hashIn->tableLength; i++) {
+		item* reader = hash->items[i];
+		if (addStudent(newHash, reader->s)) {
+			re = true;
+		}
+
+		while (reader->next != NULL) {
+			reader = reader->next;
+			if (addStudent(newHash, reader->s)) {
+				re = true;
+			}
+		}
+	}
+	hashIn = newHash
+		
+}
 int main() {
-	hashT studentHash = new hashT(100);
+	hashT* studentHash = new hashT(100);
 	char firstNames [1000] [20];
 	char lastNames [1000] [20];
 
@@ -127,7 +146,7 @@ int main() {
         }
 	while (true) { //loop
 		char input[20];
-		bool rehash = false;
+		bool reh = false;
 		cout << "Enter a command (ADD, PRINT, DELETE, QUIT): ";
 		cin >> input;
 		if (strcmp(input, "ADD") == 0) { //add students
@@ -150,7 +169,7 @@ int main() {
 
 			student* student = new student(sfname, slname, sid, sgpa);
 
-			rehash = addStudent(studentHash, student);
+			reh = addStudent(studentHash, student);
 
 		}
 		else if (strcmp(input, "PRINT") == 0) { //print students
@@ -163,8 +182,8 @@ int main() {
 		else if (strcmp(input, "QUIT") == 0) { //quit program
 			return 0;
         	}
-		while (rehash) {
-			rehash(studentHash, rehash);
+		while (reh) {
+			rehash(studentHash, reh);
 		}
 	}
 	return 0;
