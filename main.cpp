@@ -11,10 +11,16 @@ struct student {
 	int id;
 	float gpa;
 	student(char* firstIn, char* lastIn, int idIn, float gpaIn) {
-		first = firstIn;
-		last = lastIn;
+		first = new char(strlen(firstIn) + 1);
+		strcpy(first,firstIn);
+		last = new char(strlen(lastIn) + 1);
+		strcpy(last,lastIn);
 		id = idIn;
 		gpaIn;
+	}
+	~student() {
+		delete first;
+		delete last;
 	}
 };
 struct item {
@@ -25,10 +31,11 @@ struct item {
 	}
 };
 struct hashT {
-	int tablelength = 0;
+	int tablelength;
+	item* items[];
 	hashT(int length) {
-		item** items[length];
-		int tablelength = length;
+		item* items[length];
+		tablelength = length;
 	}
 };
 
@@ -42,44 +49,58 @@ char* randomName(char names[][20], int length) {
 	return names[randN];
 }
 
-bool addStudent(hashT* &hash, student* sIn) {
-	bool collide = false;
+void addStudent(hashT* &hash, student* sIn) {
 	int slot = hashify(sIn, hash);
-	int col = 0;
-	item* insertn = hash->items[slot]
+	cout << slot << endl;
 	item* insert = hash->items[slot];
-	while (insertn != NULL) {
-		insert = insertn;
-		col++;
-		insertn = insert->next;
-		if (col > 3) {
-			collide = true;
-		}
+	if (insert == NULL) {
+		hash->items[slot] = new item(sIn);
 	}
-	insert->next = new item(sIn);
-	return collide;
-}
-void rehash(hashT* &hashIn, bool &re) {
-	re = false;
-	hashT newHash = new hashT(hashIn->tableLength);
-	for (int i = 0; i >= hashIn->tableLength; i++) {
-		item* reader = hash->items[i];
-		if (addStudent(newHash, reader->s)) {
-			re = true;
+	else {	
+		while (insert->next != NULL) {
+			insert = insert->next;
 		}
-
-		while (reader->next != NULL) {
-			reader = reader->next;
-			if (addStudent(newHash, reader->s)) {
+		insert->next = new item(sIn);
+	}
+}
+bool rehash(hashT* &hashIn) {
+	bool re = false;
+	for (int i = 0; i >= hashIn->tablelength; i++) {
+		int col = 0;
+		item* reader1 = hashIn->items[i];
+		while (reader1 != NULL || reader1->next != NULL) {
+			col++;
+			cout << col << endl;
+			if (col > 3) {
 				re = true;
 			}
+			reader1 = reader1->next;
 		}
 	}
-	hashIn = newHash
-		
+	if (!re) {
+		return false;
+	}
+	hashT* newHash = new hashT(hashIn->tablelength * 2);
+	for (int i = 0; i >= hashIn->tablelength; i++) {
+		item* reader = hashIn->items[i];
+		addStudent(newHash, reader->s);
+		while (reader->next != NULL) {
+			reader = reader->next;
+			addStudent(newHash, reader->s);
+		}
+	}
+	hashIn = newHash;
+	return true;	
 }
-int main() {
-	hashT* studentHash = new hashT(100);
+hashT* newHashTable(int size) {
+	hashT* hashPointer = new hashT(size);
+	for (int i=0; i<=size; i++) {
+		hashPointer->items[i] = NULL;
+	}
+	return hashPointer;
+}
+int main() {	
+	hashT* studentHash = newHashTable(100);
 	char firstNames [1000] [20];
 	char lastNames [1000] [20];
 
@@ -93,11 +114,11 @@ int main() {
 		char ch;
 		int reading = 0;
 		int firstIndex = 0;
-		while (reading <= 1000) {
+		while (reading <= 999) {
 			char temp[20] = {'\0'};
 			firstIndex = 0;
-			while (true) { 
-				firstfile >> ch;
+			while (true) {
+				firstfile.get(ch);
 				temp[firstIndex] = ch;
 				firstIndex++;
 				if (firstfile.eof()) { // end break
@@ -113,6 +134,7 @@ int main() {
 			reading++;
 		}
 	}
+	
 	//lastnames
 	fstream lastfile;
 	lastfile.open("lnames.txt", ios::in);
@@ -123,11 +145,11 @@ int main() {
 		char ch;
 		int reading = 0;
 		int lastIndex = 0;
-		while (reading <= 1000) {
+		while (reading <= 999) {
 			char temp[20] = {'\0'};
 			lastIndex = 0;
 			while (true) {
-				lastfile >> ch;
+				lastfile.get(ch);	
 				temp[lastIndex] = ch;
 				lastIndex++;
 				if (lastfile.eof()) { // end break
@@ -167,14 +189,17 @@ int main() {
 			cout << "What is the students gpa? ";
 			cin >> sgpa;
 
-			student* student = new student(sfname, slname, sid, sgpa);
+			student* s = new student(sfname, slname, sid, sgpa);
 
-			reh = addStudent(studentHash, student);
+			addStudent(studentHash, s);
+			cout << studentHash->items[1]->s->first << endl;
+			cout << studentHash->items[1]->next->s->first << endl;
+			cout << studentHash->items[1]->next->next->s->first << endl;
+			cout << studentHash->items[1]->next->next->next->s->first << endl;
 
 		}
 		else if (strcmp(input, "PRINT") == 0) { //print students
 			//printStudent(students);
-			cout << randomName(firstNames, gen) << " " << randomName(lastNames, gen) << endl;
 		}
 		else if (strcmp(input, "DELETE") == 0) { //delete students
 			//deleteStudent(students);
@@ -182,8 +207,8 @@ int main() {
 		else if (strcmp(input, "QUIT") == 0) { //quit program
 			return 0;
         	}
-		while (reh) {
-			rehash(studentHash, reh);
+		while (rehash(studentHash)) {
+			cout << "rehashed" << endl;
 		}
 	}
 	return 0;
